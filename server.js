@@ -15,20 +15,41 @@ const BOT_USERNAME = process.env.BOT_USERNAME;
 
 const bot = new TelegramBot(TOKEN);
 
-// Подключение к встроенному Redis в Railway (автоматически использует REDIS_URL)
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Получаем URL базы из Railway
+const redisUrl = process.env.REDIS_PRIVATE_URL || process.env.REDIS_URL;
 
-redis.on('connect', () => console.log('✅ Успешное подключение к Railway Redis'));
-redis.on('error', (err) => console.error('❌ Ошибка Redis:', err));
+console.log("🔍 Проверка REDIS_URL в окружении:", redisUrl ? "Найдена (скрыта в целях безопасности)" : "ОТСУТСТВУЕТ!");
 
-// Хелперы для работы с JSON в ioredis
+// Инициализация Redis с обработкой ошибок
+const redis = new Redis(redisUrl || 'redis://127.0.0.1:6379', {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  retryStrategy(times) {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  }
+});
+
+redis.on('connect', () => console.log('✅ Успешное подключение к Redis!'));
+redis.on('error', (err) => console.error('❌ Ошибка Redis соединения:', err.message));
+
+// Хелперы для работы с JSON
 async function getJson(key) {
-  const data = await redis.get(key);
-  return data ? JSON.parse(data) : null;
+  try {
+    const data = await redis.get(key);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    console.error('Redis GET error:', e.message);
+    return null;
+  }
 }
 
 async function setJson(key, value) {
-  await redis.set(key, JSON.stringify(value));
+  try {
+    await redis.set(key, JSON.stringify(value));
+  } catch (e) {
+    console.error('Redis SET error:', e.message);
+  }
 }
 
 const categoryNames = {
