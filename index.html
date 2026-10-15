@@ -996,8 +996,8 @@
                     alert('Ошибка сервера: ' + (data.error || 'Не удалось записать в базу'));
                 }
             } catch (err) {
-                alert('Сбой сети при отправке!');
-                console.error(err);
+                alert('Ошибка: ' + err.message);
+                console.error('Детали ошибки:', err);
             } finally {
                 btn.disabled = false;
                 btn.innerText = 'Опубликовать';
@@ -1022,7 +1022,6 @@
             const titleElem = document.getElementById('sectionTitle');
             const searchBar = document.getElementById('searchBarBox');
 
-            // Скрываем строку поиска во вкладках "Профиль" и "Чаты"
             if (tabMode === 'profile' || tabMode === 'chats') {
                 searchBar.style.display = 'none';
             } else {
