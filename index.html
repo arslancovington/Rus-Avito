@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>РусьАвито — Русь Mobile RP</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c20 0%, #15102a 50%, #090a15 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-card: rgba(26, 22, 48, 0.65);
+            --neon-blue: #00f2fe;
+            --neon-purple: #9b51e0;
+            --neon-green: #00ff88;
+            --neon-red: #ff2a5f;
+            --vk-blue: #0077ff;
+            --tg-blue: #229ed9;
+            --ds-purple: #5865f2;
+            --text-primary: #ffffff;
+            --text-secondary: #8f92b2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            padding-bottom: 90px;
+            min-height: 100vh;
+        }
+
+        #pagePreloader {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f0c20; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .market-loader-spinner {
+            width: 56px; height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--neon-blue);
+            border-left: 4px solid var(--neon-purple);
+            border-radius: 50%;
+            animation: spinLoader 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .market-loader-title {
+            font-size: 16px; font-weight: 800;
+            background: linear-gradient(90deg, #00f2fe, #4facfe, #00ff88);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .header {
+            position: sticky; top: 0;
+            background: rgba(15, 12, 32, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 100; padding: 14px 18px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+        .brand-title {
+            font-size: 20px; font-weight: 900;
+            background: linear-gradient(90deg, #00f2fe, #4facfe, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .server-badge {
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: var(--neon-blue);
+            font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 20px;
+        }
+
+        .search-bar { display: flex; gap: 10px; }
+
+        .search-input {
+            flex-grow: 1; background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 12px 16px 12px 42px;
+            color: #fff; font-size: 16px !important; outline: none;
+            touch-action: manipulation;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%238f92b2" viewBox="0 0 24 24"><path d="M23.809 21.646l-6.205-6.205c1.167-1.605 1.857-3.579 1.857-5.711 0-5.265-4.241-9.5-9.461-9.5-5.22 0-9.461 4.235-9.461 9.5 0 5.264 4.241 9.5 9.461 9.5 2.132 0 4.106-.69 5.711-1.857l6.205 6.205c.414.414 1.086.414 1.5 0 .414-.413.414-1.086 0-1.5zm-13.808-4.646c-4.142 0-7.5-3.358-7.5-7.5s3.358-7.5 7.5-7.5 7.5 3.358 7.5 7.5-3.358 7.5-7.5 7.5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: 14px center;
+        }
+
+        .filter-btn {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            color: #fff; width: 46px; height: 46px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; cursor: pointer; flex-shrink: 0;
+        }
+
+        .section-header {
+            padding: 16px 18px 4px; font-size: 15px; font-weight: 800; color: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .clear-author-btn {
+            background: rgba(255, 42, 95, 0.15); border: 1px solid var(--neon-red);
+            color: var(--neon-red); font-size: 11px; padding: 4px 10px; border-radius: 10px; cursor: pointer; font-weight: 700;
+        }
+
+        .market-feed {
+            padding: 10px 18px 0;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+        }
+
+        .card {
+            background: var(--glass-card); border: 1px solid var(--glass-border);
+            border-radius: 18px; overflow: hidden; position: relative; cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .card:active { transform: scale(0.97); }
+
+        .card-preview {
+            width: 100%; height: 125px; background-size: cover; background-position: center; position: relative;
+        }
+
+        .card-tag {
+            position: absolute; top: 8px; left: 8px;
+            background: rgba(0, 0, 0, 0.7); color: #fff;
+            font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        .card-tag.urgent { background: rgba(255, 42, 95, 0.85); box-shadow: 0 0 10px rgba(255, 42, 95, 0.4); }
+
+        .like-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5;
+            backdrop-filter: blur(4px);
+        }
+        .like-btn.active { background: rgba(255, 42, 95, 0.25); border-color: var(--neon-red); }
+
+        .card-content { padding: 12px; }
+        .card-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-price { font-size: 16px; font-weight: 900; color: var(--neon-green); margin-bottom: 6px; text-shadow: 0 0 10px rgba(0,255,136,0.2); }
+        .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); }
+
+        .empty-state {
+            grid-column: span 2; text-align: center;
+            padding: 40px 20px; background: var(--glass-card);
+            border: 1px dashed var(--glass-border); border-radius: 20px; color: var(--text-secondary);
+        }
+
+        .profile-wrapper { padding: 10px 18px 20px; display: none; }
+        .profile-card { background: var(--glass-card); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 20px; }
+        .profile-card-title { font-size: 15px; font-weight: 800; margin-bottom: 14px; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+        .social-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .social-toggle-label { font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+
+        .my-lot-item {
+            background: var(--glass-card); border: 1px solid var(--glass-border);
+            border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px;
+        }
+        .my-lot-img { width: 60px; height: 60px; border-radius: 12px; background-size: cover; background-position: center; flex-shrink: 0; }
+        .my-lot-info { flex-grow: 1; overflow: hidden; }
+        .my-lot-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .my-lot-price { font-size: 14px; font-weight: 900; color: var(--neon-green); }
+
+        .btn-lot-delete {
+            background: rgba(255, 42, 95, 0.15); border: 1px solid var(--neon-red);
+            color: var(--neon-red); padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000;
+            display: none; align-items: flex-end;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: #141126; border-top: 1px solid var(--glass-border);
+            border-radius: 28px 28px 0 0; width: 100%; max-height: 90vh;
+            overflow-y: auto; padding: 24px 20px 30px;
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .modal-title { font-size: 18px; font-weight: 800; }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1); border: none; color: var(--text-secondary);
+            width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .filter-group { margin-bottom: 16px; }
+        .filter-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+
+        .text-input, .number-input, .textarea-input, .select-input {
+            width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 12px 14px; color: #fff; font-size: 16px !important;
+            outline: none; touch-action: manipulation; -webkit-appearance: none;
+        }
+        .textarea-input { resize: none; height: 90px; }
+        .select-input option { background: #141126; color: #fff; }
+        .price-inputs { display: flex; gap: 10px; }
+        .price-inputs input { width: 50%; }
+
+        .photo-upload-box {
+            border: 2px dashed var(--glass-border); background: var(--glass-bg);
+            border-radius: 16px; padding: 16px; text-align: center; cursor: pointer;
+        }
+        .photo-preview { width: 100%; height: 140px; background-size: cover; background-position: center; border-radius: 12px; display: none; }
+        .file-input-hidden { display: none; }
+
+        .urgent-toggle-wrapper {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255, 42, 95, 0.08); border: 1px solid rgba(255, 42, 95, 0.25);
+            padding: 12px 16px; border-radius: 14px; margin-bottom: 18px;
+        }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--glass-bg); border: 1px solid var(--glass-border); transition: .3s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--neon-red); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-reset { width: 35%; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 14px; font-weight: 600; cursor: pointer; padding: 14px; }
+        .btn-apply { width: 65%; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border: none; color: #fff; padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; }
+        .btn-submit-full { width: 100%; background: linear-gradient(135deg, var(--neon-green), #00b09b); border: none; color: #000; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+
+        .product-modal-image { width: 100%; height: 200px; border-radius: 20px; background-size: cover; background-position: center; margin-bottom: 16px; }
+        .product-details-price { font-size: 24px; font-weight: 900; color: var(--neon-green); margin-bottom: 6px; }
+        .product-details-title { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+        .product-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tag-item { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 10px; font-size: 12px; color: var(--text-secondary); }
+        .product-desc { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 14px; font-size: 13px; line-height: 1.5; color: #d1d5db; margin-bottom: 20px; }
+        .seller-info-box { background: rgba(0, 242, 254, 0.06); border: 1px solid rgba(0, 242, 254, 0.25); padding: 12px 16px; border-radius: 14px; font-size: 13px; color: #fff; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .seller-info-title { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; font-weight: 700; }
+        .seller-site-nick { font-size: 15px; font-weight: 900; color: var(--neon-blue); }
+
+        .contacts-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; }
+        .contacts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+        .contact-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #fff; text-decoration: none; border: none; cursor: pointer; }
+        .btn-chat-author { grid-column: span 2; background: linear-gradient(135deg, var(--neon-blue), #00b09b); color: #000; font-weight: 800; font-size: 14px; box-shadow: 0 0 15px rgba(0,242,254,0.3); }
+        .btn-ingame { background: rgba(0, 255, 136, 0.15); border: 1px solid var(--neon-green); color: var(--neon-green); grid-column: span 2; }
+        .btn-tg { background: var(--tg-blue); }
+        .btn-vk { background: var(--vk-blue); }
+        .btn-ds { background: var(--ds-purple); grid-column: span 2; }
+        .btn-author-goods { width: 100%; background: rgba(0, 242, 254, 0.1); border: 1px solid var(--glass-border); color: #fff; font-size: 13px; font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .chat-card { background: var(--glass-card); border: 1px solid var(--glass-border); border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 10px; }
+        .chat-avatar-box { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue)); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .chat-main-info { flex-grow: 1; overflow: hidden; }
+        .chat-nick { font-size: 14px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; }
+        .chat-product-sub { font-size: 11px; color: var(--neon-blue); font-weight: 600; margin: 2px 0 4px; }
+        .chat-last-text { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-dialog-messages { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; min-height: 250px; overflow-y: auto; padding: 10px 0; }
+        .msg-bubble { max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.4; word-break: break-word; }
+        .msg-bubble.them { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); align-self: flex-start; color: #fff; }
+        .msg-bubble.me { background: linear-gradient(135deg, var(--neon-blue), #00b09b); color: #000; font-weight: 700; align-self: flex-end; }
+        .chat-input-bar { display: flex; gap: 8px; margin-top: 14px; }
+
+        .bottom-dock {
+            position: fixed; bottom: 15px; left: 18px; right: 18px;
+            background: rgba(20, 16, 42, 0.88); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px;
+            display: flex; justify-content: space-around; padding: 10px 6px; z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .dock-tab { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; font-weight: 600; text-decoration: none; gap: 4px; width: 18%; transition: color 0.2s; }
+        .dock-tab.active { color: var(--neon-blue); }
+        .dock-tab svg { width: 22px; height: 22px; fill: currentColor; }
+        .dock-tab.create-btn { background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); color: #fff; padding: 8px 0; border-radius: 16px; box-shadow: 0 0 15px rgba(0,242,254,0.3); }
+        .dock-tab.create-btn svg { fill: #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="pagePreloader">
+        <div class="market-loader-spinner"></div>
+        <div class="market-loader-title">РусьАвито</div>
+    </div>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="brand-title">РусьАвито</div>
+            <div class="server-badge">РУСЬ MOBILE RP</div>
+        </div>
+        <div class="search-bar" id="searchBarBox">
+            <input type="text" id="searchInput" class="search-input" placeholder="Поиск товаров и услуг..." oninput="handleSearchInput(this.value)">
+            <button class="filter-btn" id="filterBtn" onclick="toggleModal('filterModal', true)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3M3 5v2h10V5H3m10 16v-2h8v-2h-8v-2h-2v6h2M7 9v2H3v2h4v2h2V9H7m14 4v-2H11v2h10m-6-8h2V3h-2v2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span id="sectionTitle">🔥 Все объявления</span>
+        <button id="clearAuthorBtn" class="clear-author-btn" style="display: none;" onclick="clearAuthorFilter()">✖ Сбросить автора</button>
+    </div>
+
+    <div class="market-feed" id="feedContainer"></div>
+
+    <div class="profile-wrapper" id="profileSection">
+        <div class="profile-card">
+            <div class="profile-card-title">⚙️ Настройки профиля</div>
+            <div class="filter-group">
+                <div class="filter-label">Ник на сайте *</div>
+                <input type="text" id="profSiteNick" class="text-input" placeholder="Ваш ник">
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">Ник в игре (RolePlay) *</div>
+                <input type="text" id="profGameNick" class="text-input" placeholder="Egor_Cred">
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">Номер телефона в игре *</div>
+                <input type="text" id="profGamePhone" class="text-input" placeholder="777-888">
+            </div>
+
+            <div class="filter-group">
+                <div class="social-toggle-row">
+                    <span class="social-toggle-label">✈️ Telegram</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleTg" onchange="toggleSocialField('Tg')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="boxTgInput" style="display: none; margin-top: 8px;">
+                    <input type="text" id="profTgLink" class="text-input" placeholder="https://t.me/nick">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="social-toggle-row">
+                    <span class="social-toggle-label">🟦 ВКонтакте</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleVk" onchange="toggleSocialField('Vk')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="boxVkInput" style="display: none; margin-top: 8px;">
+                    <input type="text" id="profVkLink" class="text-input" placeholder="https://vk.com/id123">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="social-toggle-row">
+                    <span class="social-toggle-label">👾 Discord</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleDs" onchange="toggleSocialField('Ds')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="boxDsInput" style="display: none; margin-top: 8px;">
+                    <input type="text" id="profDiscord" class="text-input" placeholder="user#1234">
+                </div>
+            </div>
+
+            <button class="btn-submit-full" style="font-size: 13px; padding: 12px;" onclick="saveProfileSettings()">💾 Сохранить настройки</button>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-card-title" style="display: flex; justify-content: space-between;">
+                <span>📦 Мои объявления</span>
+                <span id="myLotsCount" style="color: var(--neon-blue);">0 шт</span>
+            </div>
+            <div id="myLotsContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📢 Подать объявление</div>
+                <button class="close-btn" onclick="toggleModal('createModal', false)">✕</button>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Название товара *</div>
+                <input type="text" id="createTitle" class="text-input" placeholder="BMW M5 F90">
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Категория *</div>
+                <select class="select-input" id="createCategory">
+                    <option value="" disabled selected>Выберите категорию...</option>
+                    <option value="auto">🏎️ Авторынок</option>
+                    <option value="realty">🏰 Недвижимость</option>
+                    <option value="business">💎 Бизнес</option>
+                    <option value="skins">👕 Скины/Аксессуары</option>
+                    <option value="numbers">📞 Номера/Сим</option>
+                    <option value="other">📦 Прочее</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Сервер (1–9) *</div>
+                <select class="select-input" id="createServer">
+                    <option value="" disabled selected>Выберите сервер...</option>
+                    <option value="1">Сервер #1</option>
+                    <option value="2">Сервер #2</option>
+                    <option value="3">Сервер #3</option>
+                    <option value="4">Сервер #4</option>
+                    <option value="5">Сервер #5</option>
+                    <option value="6">Сервер #6</option>
+                    <option value="7">Сервер #7</option>
+                    <option value="8">Сервер #8</option>
+                    <option value="9">Сервер #9</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Цена (₽) *</div>
+                <input type="number" id="createPrice" class="number-input" placeholder="Стоимость">
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Фото товара *</div>
+                <div class="photo-upload-box" onclick="triggerFileInput('photoFileInput')">
+                    <div id="uploadPlaceholder">
+                        <div style="font-size: 28px; margin-bottom: 4px;">📷</div>
+                        <div style="font-size: 12px; font-weight: 700; color: #fff;">Загрузить фото</div>
+                    </div>
+                    <div class="photo-preview" id="photoPreview"></div>
+                </div>
+                <input type="file" id="photoFileInput" class="file-input-hidden" accept="image/*" onchange="handleImageSelect(event, 'photoPreview', 'uploadPlaceholder')">
+            </div>
+
+            <div class="urgent-toggle-wrapper">
+                <div style="font-weight: 700; font-size: 14px;">🔥 Срочно</div>
+                <label class="switch">
+                    <input type="checkbox" id="createUrgent">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Описание *</div>
+                <textarea id="createDesc" class="textarea-input" placeholder="Детали товара..."></textarea>
+            </div>
+
+            <button class="btn-submit-full" id="btnSubmitLot" onclick="submitNewProduct()">Опубликовать</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Объявление</div>
+                <button class="close-btn" onclick="toggleModal('productModal', false)">✕</button>
+            </div>
+            
+            <div class="product-modal-image" id="pModalImg"></div>
+            <div class="product-details-price" id="pModalPrice">0 ₽</div>
+            <div class="product-details-title" id="pModalTitle">Название товара</div>
+
+            <div class="product-tags">
+                <span class="tag-item" id="pModalCategory">📁 Категория</span>
+                <span class="tag-item" id="pModalServer">📍 Сервер #1</span>
+                <span class="tag-item" id="pModalTag">Характеристика</span>
+            </div>
+
+            <div class="product-desc" id="pModalDesc">Описание товара...</div>
+
+            <div class="seller-info-box">
+                <div>
+                    <div class="seller-info-title">Продавец на сайте</div>
+                    <div class="seller-site-nick" id="pModalSiteNick">Egor_Cred</div>
+                </div>
+                <span style="font-size: 20px;">👤</span>
+            </div>
+
+            <div class="contacts-title">Связаться с продавцом</div>
+            <div class="contacts-grid">
+                <button class="contact-btn btn-chat-author" onclick="openChatFromProduct()">💬 Чат с автором</button>
+                <button class="contact-btn btn-ingame" onclick="copyInGameInfo()">
+                    🎮 В игре: <span id="pModalNick">Nick</span> (тел: <span id="pModalPhone">000</span>)
+                </button>
+                <a href="#" target="_blank" class="contact-btn btn-tg" id="btnTg">✈️ Telegram</a>
+                <a href="#" target="_blank" class="contact-btn btn-vk" id="btnVk">🟦 ВКонтакте</a>
+                <button class="contact-btn btn-ds" id="btnDs" onclick="copyDiscord()">
+                    👾 Discord: <span id="pModalDs">user_ds</span>
+                </button>
+            </div>
+
+            <button class="btn-author-goods" onclick="filterByCurrentAuthor()">
+                <span>🛍️</span>
+                <span>Все товары автора (<strong id="pModalAuthorNick">Игрок</strong>)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно переписки (Чат) -->
+    <div class="modal-overlay" id="chatConversationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="chatHeaderNick">Имя Продавца</div>
+                    <div style="font-size: 11px; color: var(--neon-blue);" id="chatHeaderProduct">📦 Товар</div>
+                </div>
+                <button class="close-btn" onclick="toggleModal('chatConversationModal', false)">✕</button>
+            </div>
+
+            <div class="chat-dialog-messages" id="chatMessagesList"></div>
+
+            <div class="chat-input-bar">
+                <input type="text" id="chatInput" class="text-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button class="btn-apply" style="width: auto; padding: 0 18px;" onclick="sendChatMessage()">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="filterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🎛️ Фильтры поиска</div>
+                <button class="close-btn" onclick="toggleModal('filterModal', false)">✕</button>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Категория</div>
+                <select class="select-input" id="categorySelect">
+                    <option value="all">Все категории</option>
+                    <option value="auto">🏎️ Авторынок</option>
+                    <option value="realty">🏰 Недвижимость</option>
+                    <option value="business">💎 Бизнес</option>
+                    <option value="skins">👕 Скины/Аксессуары</option>
+                    <option value="numbers">📞 Номера/Сим</option>
+                    <option value="other">📦 Прочее</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Сервер</div>
+                <select class="select-input" id="serverSelect">
+                    <option value="all">Все сервера (1-9)</option>
+                    <option value="1">Сервер #1</option>
+                    <option value="2">Сервер #2</option>
+                    <option value="3">Сервер #3</option>
+                    <option value="4">Сервер #4</option>
+                    <option value="5">Сервер #5</option>
+                    <option value="6">Сервер #6</option>
+                    <option value="7">Сервер #7</option>
+                    <option value="8">Сервер #8</option>
+                    <option value="9">Сервер #9</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-label">Цена (₽)</div>
+                <div class="price-inputs">
+                    <input type="number" class="number-input" placeholder="От 0" id="priceFrom">
+                    <input type="number" class="number-input" placeholder="До..." id="priceTo">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-reset" onclick="resetFilters()">Сбросить</button>
+                <button class="btn-apply" onclick="applyFilters()">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-dock">
+        <a href="#" class="dock-tab active" onclick="switchTab(this, 'feed')">
+            <svg viewBox="0 0 24 24"><path d="M12 23c-4.97 0-9-3.58-9-8.02 0-3.14 1.87-6.02 4.79-7.31l1.11-.5-.22-1.22c-.37-2.02.57-3.95 2.3-4.95 1.76-1.03 3.99-.78 5.51.62l.85.78-.63 1.05c-.9 1.5-.78 3.39.29 4.76l.73.94-1.02.66C15.26 12.01 14 13.9 14 15.98c0 3.31 2.69 6.02 6 6.02h-8z"/></svg>
+            <span>Лента</span>
+        </a>
+        <a href="#" class="dock-tab" onclick="switchTab(this, 'wishlist')">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span>Избранное</span>
+        </a>
+        <a href="#" class="dock-tab create-btn" onclick="switchTab(this, 'create')">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span>Продать</span>
+        </a>
+        <a href="#" class="dock-tab" onclick="switchTab(this, 'chats')">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span>Чаты</span>
+        </a>
+        <a href="#" class="dock-tab" onclick="switchTab(this, 'profile')">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Профиль</span>
+        </a>
+    </div>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        const tgUser = tg?.initDataUnsafe?.user;
+        const defaultTgId = String(tgUser?.id || 123456789);
+        const defaultName = tgUser?.first_name || tgUser?.username || "Пользователь";
+
+        let USER_PROFILE = JSON.parse(localStorage.getItem(`rus_avito_user_${defaultTgId}`)) || {
+            tgId: defaultTgId,
+            siteNick: defaultName,
+            gameNick: "",
+            gamePhone: "",
+            hasTg: true,
+            tgLink: "",
+            hasVk: true,
+            vkLink: "",
+            hasDs: false,
+            discord: ""
+        };
+
+        if (USER_PROFILE.siteNick === "Игрок" && defaultName !== "Пользователь") {
+            USER_PROFILE.siteNick = defaultName;
+            localStorage.setItem(`rus_avito_user_${defaultTgId}`, JSON.stringify(USER_PROFILE));
+        }
+
+        const CATEGORY_NAMES = {
+            auto: "🏎️ Авторынок",
+            realty: "🏰 Недвижимость",
+            business: "💎 Бизнес",
+            skins: "👕 Скины/Аксессуары",
+            numbers: "📞 Номера/Сим",
+            other: "📦 Прочее"
+        };
+
+        let PRODUCTS = [];
+        let CHATS = [];
+        let likedProductIds = new Set();
+        let currentTabMode = 'feed';
+        let currentActiveProduct = null;
+        let activeChatId = null;
+        let uploadedImageBase64 = null;
+
+        let activeFilters = {
+            searchQuery: '',
+            category: 'all',
+            server: 'all',
+            priceFrom: null,
+            priceTo: null,
+            authorTgId: null,
+            authorSiteNick: null
+        };
+
+        async function loadAppData() {
+            try {
+                const pRes = await fetch(`/api/profile/${USER_PROFILE.tgId}?defaultName=${encodeURIComponent(USER_PROFILE.siteNick)}`);
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    if (pData.siteNick && pData.siteNick !== "Игрок") {
+                        USER_PROFILE.siteNick = pData.siteNick;
+                    }
+                    if (pData.gameNick) USER_PROFILE.gameNick = pData.gameNick;
+                    if (pData.gamePhone) USER_PROFILE.gamePhone = pData.gamePhone;
+                    if (pData.tgLink) USER_PROFILE.tgLink = pData.tgLink;
+                    if (pData.vkLink) USER_PROFILE.vkLink = pData.vkLink;
+                    if (pData.discord) USER_PROFILE.discord = pData.discord;
+                    saveToLocal();
+                }
+
+                const prRes = await fetch('/api/products');
+                if (prRes.ok) {
+                    PRODUCTS = await prRes.json();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            initProfileInputs();
+            renderFeed();
+
+            const preloader = document.getElementById('pagePreloader');
+            if (preloader) {
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.style.display = 'none', 300);
+            }
+        }
+
+        function saveToLocal() {
+            localStorage.setItem(`rus_avito_user_${USER_PROFILE.tgId}`, JSON.stringify(USER_PROFILE));
+        }
+
+        function initProfileInputs() {
+            document.getElementById('profSiteNick').value = USER_PROFILE.siteNick || defaultName;
+            document.getElementById('profGameNick').value = USER_PROFILE.gameNick || '';
+            document.getElementById('profGamePhone').value = USER_PROFILE.gamePhone || '';
+
+            document.getElementById('toggleTg').checked = USER_PROFILE.hasTg ?? true;
+            document.getElementById('profTgLink').value = USER_PROFILE.tgLink || '';
+            document.getElementById('boxTgInput').style.display = USER_PROFILE.hasTg ? 'block' : 'none';
+
+            document.getElementById('toggleVk').checked = USER_PROFILE.hasVk ?? true;
+            document.getElementById('profVkLink').value = USER_PROFILE.vkLink || '';
+            document.getElementById('boxVkInput').style.display = USER_PROFILE.hasVk ? 'block' : 'none';
+
+            document.getElementById('toggleDs').checked = USER_PROFILE.hasDs ?? false;
+            document.getElementById('profDiscord').value = USER_PROFILE.discord || '';
+            document.getElementById('boxDsInput').style.display = USER_PROFILE.hasDs ? 'block' : 'none';
+        }
+
+        function toggleSocialField(type) {
+            const isChecked = document.getElementById(`toggle${type}`).checked;
+            document.getElementById(`box${type}Input`).style.display = isChecked ? 'block' : 'none';
+        }
+
+        async function saveProfileSettings() {
+            const siteNick = document.getElementById('profSiteNick').value.trim();
+            const gameNick = document.getElementById('profGameNick').value.trim();
+            const gamePhone = document.getElementById('profGamePhone').value.trim();
+
+            if (!siteNick || !gameNick || !gamePhone) {
+                alert('Заполните все обязательные поля!');
+                return;
+            }
+
+            USER_PROFILE.siteNick = siteNick;
+            USER_PROFILE.gameNick = gameNick;
+            USER_PROFILE.gamePhone = gamePhone;
+
+            USER_PROFILE.hasTg = document.getElementById('toggleTg').checked;
+            USER_PROFILE.tgLink = document.getElementById('profTgLink').value.trim();
+
+            USER_PROFILE.hasVk = document.getElementById('toggleVk').checked;
+            USER_PROFILE.vkLink = document.getElementById('profVkLink').value.trim();
+
+            USER_PROFILE.hasDs = document.getElementById('toggleDs').checked;
+            USER_PROFILE.discord = document.getElementById('profDiscord').value.trim();
+
+            saveToLocal();
+
+            try {
+                await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(USER_PROFILE)
+                });
+                alert('Профиль сохранен!');
+                renderProfileSection();
+            } catch (e) {
+                alert('Ошибка сохранения');
+            }
+        }
+
+        function renderProfileSection() {
+            const container = document.getElementById('myLotsContainer');
+            container.innerHTML = '';
+
+            const myProducts = PRODUCTS.filter(p => String(p.seller?.tgId) === String(USER_PROFILE.tgId));
+            document.getElementById('myLotsCount').innerText = `${myProducts.length} шт`;
+
+            if (myProducts.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-secondary); font-size: 13px;">У вас нет объявлений.</div>`;
+                return;
+            }
+
+            myProducts.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'my-lot-item';
+                row.innerHTML = `
+                    <div class="my-lot-img" style="background-image: url('${item.image}');"></div>
+                    <div class="my-lot-info">
+                        <div class="my-lot-title">${item.title}</div>
+                        <div class="my-lot-price">${item.price}</div>
+                        <div style="font-size: 10px; color: var(--text-secondary);">Сервер #${item.server}</div>
+                    </div>
+                    <button class="btn-lot-delete" onclick="deleteMyProduct(${item.id})">🗑️ Удалить</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        async function deleteMyProduct(productId) {
+            if (confirm("Удалить это объявление?")) {
+                await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+                PRODUCTS = PRODUCTS.filter(p => Number(p.id) !== productId);
+                renderFeed();
+                renderProfileSection();
+            }
+        }
+
+        function renderChatsList(container) {
+            container.innerHTML = '';
+            if (CHATS.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+                        <div>Нет активных чатов</div>
+                    </div>
+                `;
+                return;
+            }
+
+            CHATS.forEach(chat => {
+                const card = document.createElement('div');
+                card.className = 'chat-card';
+                card.onclick = () => openChatDialog(chat.id);
+                card.innerHTML = `
+                    <div class="chat-avatar-box">${chat.avatar}</div>
+                    <div class="chat-main-info">
+                        <div class="chat-nick">
+                            <span>${chat.sellerSiteNick}</span>
+                            <span style="font-size: 10px; color: var(--text-secondary);">${chat.time}</span>
+                        </div>
+                        <div class="chat-product-sub">📦 ${chat.productTitle}</div>
+                        <div class="chat-last-text">${chat.lastMsg}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+            container.innerHTML = '';
+
+            if (currentTabMode === 'chats') {
+                container.style.display = 'block';
+                renderChatsList(container);
+                return;
+            } else {
+                container.style.display = 'grid';
+            }
+
+            const filtered = PRODUCTS.filter(p => {
+                if (currentTabMode === 'wishlist' && !likedProductIds.has(p.id)) return false;
+
+                if (activeFilters.authorTgId && String(p.seller?.tgId) !== String(activeFilters.authorTgId)) return false;
+
+                if (activeFilters.searchQuery) {
+                    const matchTitle = p.title.toLowerCase().includes(activeFilters.searchQuery);
+                    const matchDesc = (p.desc || '').toLowerCase().includes(activeFilters.searchQuery);
+                    if (!matchTitle && !matchDesc) return false;
+                }
+
+                if (activeFilters.category !== 'all' && p.category !== activeFilters.category) return false;
+                if (activeFilters.server !== 'all' && String(p.server) !== String(activeFilters.server)) return false;
+                
+                const priceNum = parseInt(String(p.price).replace(/\D/g, '')) || 0;
+                if (activeFilters.priceFrom !== null && priceNum < activeFilters.priceFrom) return false;
+                if (activeFilters.priceTo !== null && priceNum > activeFilters.priceTo) return false;
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state">Объявлений не найдено</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isLiked = likedProductIds.has(item.id);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openProductDetails(item.id);
+
+                const tagClass = item.isUrgent ? 'card-tag urgent' : 'card-tag';
+                const tagText = item.isUrgent ? '🔥 СРОЧНО' : 'Активно';
+
+                card.innerHTML = `
+                    <div class="card-preview" style="background-image: url('${item.image}');">
+                        <span class="${tagClass}">${tagText}</span>
+                        <button class="like-btn ${isLiked ? 'active' : ''}" onclick="toggleLike(event, ${item.id})">
+                            ${isLiked ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-name">${item.title}</div>
+                        <div class="card-price">${item.price}</div>
+                        <div class="card-footer">
+                            <span>📍 Сервер #${item.server}</span>
+                            <span>${item.seller?.siteNick || 'Игрок'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openProductDetails(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            currentActiveProduct = product;
+
+            document.getElementById('pModalImg').style.backgroundImage = `url('${product.image}')`;
+            document.getElementById('pModalPrice').innerText = product.price;
+            document.getElementById('pModalTitle').innerText = product.title;
+            document.getElementById('pModalCategory').innerText = CATEGORY_NAMES[product.category] || "📦 Товар";
+            document.getElementById('pModalServer').innerText = `📍 Сервер #${product.server}`;
+            document.getElementById('pModalTag').innerText = product.isUrgent ? '🔥 СРОЧНО' : 'Активно';
+            document.getElementById('pModalDesc').innerText = product.desc || 'Нет описания';
+
+            document.getElementById('pModalSiteNick').innerText = product.seller?.siteNick || 'Игрок';
+            document.getElementById('pModalAuthorNick').innerText = product.seller?.siteNick || 'Игрок';
+            document.getElementById('pModalNick').innerText = product.seller?.nick || 'Не указан';
+            document.getElementById('pModalPhone').innerText = product.seller?.phone || 'Не указан';
+
+            const btnTg = document.getElementById('btnTg');
+            if (product.seller?.hasTg && product.seller?.tgLink) {
+                btnTg.style.display = 'flex';
+                btnTg.href = product.seller.tgLink;
+            } else { btnTg.style.display = 'none'; }
+
+            const btnVk = document.getElementById('btnVk');
+            if (product.seller?.hasVk && product.seller?.vkLink) {
+                btnVk.style.display = 'flex';
+                btnVk.href = product.seller.vkLink;
+            } else { btnVk.style.display = 'none'; }
+
+            const btnDs = document.getElementById('btnDs');
+            if (product.seller?.hasDs && product.seller?.discord) {
+                btnDs.style.display = 'flex';
+                document.getElementById('pModalDs').innerText = product.seller.discord;
+            } else { btnDs.style.display = 'none'; }
+
+            toggleModal('productModal', true);
+        }
+
+        async function submitNewProduct() {
+            const btn = document.getElementById('btnSubmitLot');
+            const title = document.getElementById('createTitle').value.trim();
+            const category = document.getElementById('createCategory').value;
+            const server = document.getElementById('createServer').value;
+            const priceVal = document.getElementById('createPrice').value;
+            const isUrgent = document.getElementById('createUrgent').checked;
+            const desc = document.getElementById('createDesc').value.trim();
+
+            if (!title || !category || !server || !priceVal || !desc) {
+                alert('Заполните все обязательные поля!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Публикация...';
+
+            const payload = {
+                id: Date.now(),
+                title,
+                category,
+                server: Number(server),
+                price: Number(priceVal).toLocaleString('ru-RU') + ' ₽',
+                isUrgent,
+                desc,
+                image: uploadedImageBase64 || 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=400',
+                seller: {
+                    tgId: String(USER_PROFILE.tgId),
+                    siteNick: USER_PROFILE.siteNick,
+                    nick: USER_PROFILE.gameNick || USER_PROFILE.siteNick,
+                    phone: USER_PROFILE.gamePhone || '000-000',
+                    hasTg: USER_PROFILE.hasTg,
+                    tgLink: USER_PROFILE.tgLink,
+                    hasVk: USER_PROFILE.hasVk,
+                    vkLink: USER_PROFILE.vkLink,
+                    hasDs: USER_PROFILE.hasDs,
+                    discord: USER_PROFILE.discord
+                }
+            };
+
+            try {
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    toggleModal('createModal', false);
+                    document.getElementById('createTitle').value = '';
+                    document.getElementById('createPrice').value = '';
+                    document.getElementById('createDesc').value = '';
+                    document.getElementById('createUrgent').checked = false;
+                    uploadedImageBase64 = null;
+                    document.getElementById('photoPreview').style.display = 'none';
+                    document.getElementById('uploadPlaceholder').style.display = 'block';
+
+                    alert('Объявление успешно опубликовано!');
+                    loadAppData();
+                } else {
+                    alert('Ошибка сервера: ' + (data.error || 'Не удалось записать в базу'));
+                }
+            } catch (err) {
+                alert('Сбой сети при отправке!');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Опубликовать';
+            }
+        }
+
+        function toggleLike(e, id) {
+            e.stopPropagation();
+            likedProductIds.has(id) ? likedProductIds.delete(id) : likedProductIds.add(id);
+            renderFeed();
+        }
+
+        function handleSearchInput(v) { activeFilters.searchQuery = v.trim().toLowerCase(); renderFeed(); }
+
+        function switchTab(element, tabMode) {
+            if (tabMode === 'create') { toggleModal('createModal', true); return; }
+            document.querySelectorAll('.dock-tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            currentTabMode = tabMode;
+
+            const titleElem = document.getElementById('sectionTitle');
+            const searchBar = document.getElementById('searchBarBox');
+
+            // Скрываем строку поиска во вкладках "Профиль" и "Чаты"
+            if (tabMode === 'profile' || tabMode === 'chats') {
+                searchBar.style.display = 'none';
+            } else {
+                searchBar.style.display = 'flex';
+            }
+
+            if (tabMode === 'profile') {
+                document.getElementById('feedContainer').style.display = 'none';
+                document.getElementById('profileSection').style.display = 'block';
+                titleElem.innerText = '👤 Мой профиль';
+                initProfileInputs();
+                renderProfileSection();
+            } else {
+                document.getElementById('feedContainer').style.display = tabMode === 'chats' ? 'block' : 'grid';
+                document.getElementById('profileSection').style.display = 'none';
+
+                if (tabMode === 'wishlist') titleElem.innerText = '❤️ Избранное';
+                else if (tabMode === 'chats') titleElem.innerText = '💬 Чаты';
+                else titleElem.innerText = '🔥 Все объявления';
+
+                renderFeed();
+            }
+        }
+
+        function openChatFromProduct() {
+            if (!currentActiveProduct) return;
+            const sellerNick = currentActiveProduct.seller?.siteNick || 'Игрок';
+            const productTitle = currentActiveProduct.title;
+
+            let existingChat = CHATS.find(c => c.sellerSiteNick === sellerNick && c.productTitle === productTitle);
+
+            if (!existingChat) {
+                existingChat = {
+                    id: Date.now(),
+                    sellerSiteNick: sellerNick,
+                    productTitle: productTitle,
+                    avatar: "👤",
+                    lastMsg: "Здравствуйте! Интересует ваш товар.",
+                    time: "Только что",
+                    messages: [
+                        { sender: 'me', text: `Здравствуйте! Интересует ваш товар: ${productTitle}` }
+                    ]
+                };
+                CHATS.unshift(existingChat);
+            }
+
+            toggleModal('productModal', false);
+            openChatDialog(existingChat.id);
+        }
+
+        function openChatDialog(chatId) {
+            const chat = CHATS.find(c => c.id === chatId);
+            if (!chat) return;
+
+            activeChatId = chatId;
+            document.getElementById('chatHeaderNick').innerText = chat.sellerSiteNick;
+            document.getElementById('chatHeaderProduct').innerText = `📦 ${chat.productTitle}`;
+
+            renderChatMessages(chat);
+            toggleModal('chatConversationModal', true);
+        }
+
+        function renderChatMessages(chat) {
+            const container = document.getElementById('chatMessagesList');
+            container.innerHTML = '';
+            chat.messages.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = `msg-bubble ${msg.sender}`;
+                bubble.innerText = msg.text;
+                container.appendChild(bubble);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !activeChatId) return;
+
+            const chat = CHATS.find(c => c.id === activeChatId);
+            if (!chat) return;
+
+            chat.messages.push({ sender: 'me', text: text });
+            chat.lastMsg = text;
+            chat.time = 'Только что';
+
+            input.value = '';
+            renderChatMessages(chat);
+        }
+
+        function filterByCurrentAuthor() {
+            if (!currentActiveProduct) return;
+            activeFilters.authorTgId = currentActiveProduct.seller?.tgId;
+            activeFilters.authorSiteNick = currentActiveProduct.seller?.siteNick;
+            
+            document.getElementById('sectionTitle').innerText = `🛍️ Товары автора: ${activeFilters.authorSiteNick}`;
+            document.getElementById('clearAuthorBtn').style.display = 'inline-block';
+            toggleModal('productModal', false);
+            switchTab(document.querySelectorAll('.dock-tab')[0], 'feed');
+        }
+
+        function clearAuthorFilter() {
+            activeFilters.authorTgId = null;
+            activeFilters.authorSiteNick = null;
+            document.getElementById('sectionTitle').innerText = '🔥 Все объявления';
+            document.getElementById('clearAuthorBtn').style.display = 'none';
+            renderFeed();
+        }
+
+        function applyFilters() {
+            activeFilters.category = document.getElementById('categorySelect').value;
+            activeFilters.server = document.getElementById('serverSelect').value;
+            const pFrom = document.getElementById('priceFrom').value;
+            const pTo = document.getElementById('priceTo').value;
+            activeFilters.priceFrom = pFrom !== '' ? Number(pFrom) : null;
+            activeFilters.priceTo = pTo !== '' ? Number(pTo) : null;
+            toggleModal('filterModal', false);
+            renderFeed();
+        }
+
+        function resetFilters() {
+            document.getElementById('categorySelect').value = 'all';
+            document.getElementById('serverSelect').value = 'all';
+            document.getElementById('priceFrom').value = '';
+            document.getElementById('priceTo').value = '';
+            activeFilters.category = 'all';
+            activeFilters.server = 'all';
+            activeFilters.priceFrom = null;
+            activeFilters.priceTo = null;
+            renderFeed();
+        }
+
+        function copyInGameInfo() {
+            if (!currentActiveProduct) return;
+            const t = `Ник: ${currentActiveProduct.seller?.nick || ''}, Тел: ${currentActiveProduct.seller?.phone || ''}`;
+            navigator.clipboard.writeText(t);
+            alert(`Скопировано:\n${t}`);
+        }
+
+        function copyDiscord() {
+            if (!currentActiveProduct) return;
+            navigator.clipboard.writeText(currentActiveProduct.seller?.discord || '');
+            alert(`Discord скопирован!`);
+        }
+
+        function toggleModal(id, show) { document.getElementById(id).classList.toggle('active', show); }
+        function triggerFileInput(id) { document.getElementById(id).click(); }
+
+        function handleImageSelect(e, pId, hId) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                    document.getElementById(pId).style.backgroundImage = `url('${uploadedImageBase64}')`;
+                    document.getElementById(pId).style.display = 'block';
+                    document.getElementById(hId).style.display = 'none';
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        loadAppData();
+    </script>
+</body>
+</html>
